@@ -1,3 +1,6 @@
+# Diagrama de flujo general
+![image info](https://firebasestorage.googleapis.com/v0/b/pandora-db134.appspot.com/o/delete_later%2Fmedidor_electronico_online.drawio.png?alt=media&token=6bf8e3c0-39df-4d67-b0be-aebde7884cf2)
+
 # Requisitos
 ###### Hardware:
 * 1 x Arduino
