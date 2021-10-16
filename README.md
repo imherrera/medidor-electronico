@@ -11,13 +11,13 @@
 
 # Estructura del proyecto
 ###### Server:
-Este directorio contendra todo el codigo relacionado a el backend
+Este directorio contiene todo el codigo relacionado a el backend
 
 ###### Client:
-Este directorio contendra codigo relacionado a la/s plataformas de visualizacion
+Este directorio contiene codigo relacionado a la/s plataformas de visualizacion
 
 ###### Core: 
-Este directorio contendra el codigo relacionado al medidor
+Este directorio contiene el codigo relacionado al medidor
 
 # Lenguajes, frameworks y uso
 * Go -> Servidor
