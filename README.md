@@ -21,6 +21,6 @@ Este directorio contendra el codigo relacionado al medidor
 
 # Lenguajes, frameworks y uso
 * Go -> Servidor
-* JS: React, ANTD -> Pagina Web
+* JS, HTML, CSS: React, ANTD -> Pagina Web
 * Kotlin: Compose, Ktor, Serialization -> App Android
 * C++ -> Arduino
