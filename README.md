@@ -4,6 +4,7 @@
 # Requisitos
 ###### Hardware:
 * 1 x Arduino
+* 1 x Shield Ethernet W5100
 * 1 x Sensor CT YHDC SCT-013
 * 1 x Resistencia de 18 Ohms si se utilizara 3.3V, o 33 Ohms para 5V
 * 2 x 10k Ohm resistores
