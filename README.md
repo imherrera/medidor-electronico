@@ -1,9 +1,10 @@
 # Diagrama de flujo general
-![image info](https://firebasestorage.googleapis.com/v0/b/pandora-db134.appspot.com/o/delete_later%2Fmedidor_electronico_online.drawio.png?alt=media&token=6bf8e3c0-39df-4d67-b0be-aebde7884cf2)
+![image info](https://firebasestorage.googleapis.com/v0/b/pandora-db134.appspot.com/o/delete_later%2Fmedidor_electronico_online.drawio%20(1).png?alt=media&token=8c88ac9a-82ce-430a-8020-12fea45ca486)
 
 # Requisitos
 ###### Hardware:
-* 1 x Arduino
+* 1 x Arduino Uno
+* 1 x Shield Ethernet W5100
 * 1 x Sensor CT YHDC SCT-013
 * 1 x Resistencia de 18 Ohms si se utilizara 3.3V, o 33 Ohms para 5V
 * 2 x 10k Ohm resistores
