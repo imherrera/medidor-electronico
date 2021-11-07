@@ -1,24 +1,54 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react';
+import { Layout, Menu, Button } from 'antd';
+import { BrowserRouter as Router, Switch, Route, useLocation } from "react-router-dom";
+const { Header, Content, Footer } = Layout;
+
+function Login() {
+  const error = null;
+
+  function submit(credentials) {
+    // En esta funcion enviamos los credenciales (Correo, Contraseña) al servidor
+  }
+
+  return <h1>Pantalla de inicio de sesion</h1>
+}
+
+function Dashboard() {
+
+  return <h1>Pantalla de estadisticas</h1>
+}
+
+const routes = [
+  {
+    title: 'Inicio',
+    path: '/',
+    main: () => <Dashboard />
+  },
+  {
+    title: 'Iniciar sesion',
+    path: '/login',
+    main: () => <Login />
+  },
+  {
+    title: '404',
+    path: '/*',
+    main: () => <h1>Pagina no encontrada</h1>
+  }
+];
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Header>
+          <Menu theme="dark" mode="horizontal">          
+            <Menu.Item>
+              Iniciar Sesion
+            </Menu.Item>
+          </Menu>
+        </Header>
+      </Layout>
+    </Router>
   );
 }
 
