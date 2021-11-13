@@ -21,6 +21,6 @@ Este directorio contiene codigo relacionado a la/s plataformas de visualizacion
 Este directorio contiene el codigo relacionado al medidor
 
 # Lenguajes, frameworks y uso
+* C++ -> Arduino
 * Go, Mux -> Servidor
 * JS, HTML, CSS, React, ANTD -> Pagina Web
-* C++ -> Arduino
