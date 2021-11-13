@@ -1,52 +1,106 @@
-import { useState } from 'react';
-import { Layout, Menu, Button } from 'antd';
-import { BrowserRouter as Router, Switch, Route, useLocation } from "react-router-dom";
-const { Header, Content, Footer } = Layout;
+import './App.css';
+import logo from './logo.svg';
 
-function Login() {
-  const error = null;
+import { Layout, Divider, Button } from 'antd';
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 
-  function submit(credentials) {
-    // En esta funcion enviamos los credenciales (Correo, Contraseña) al servidor
-  }
+import Landing from './Landing';
+import Dashboard from './Dashboard';
+import Login from './Login';
 
-  return <h1>Pantalla de inicio de sesion</h1>
+
+/**
+ * Estilo para posicionar elementos adentro de manera horizontal
+ * **/
+const rowStyle = {
+  display: 'flex',
+  flexDirection: 'row', // Posisionar elementos horizontalmente
+  alignItems: 'center', // Centrar verticalmente
+};
+
+/**
+ * Logo de la App
+ * **/
+function AppLogo() {
+  const logoStyle = {
+    height: '40px',
+    marginRight: '16px' // Dejar margen hacia el lado derecho
+  };
+  return (
+    <a href="/" style={rowStyle}>
+      <img style={logoStyle} src={logo} alt="" />
+      <h2 style={{ margin: 0 }}>PowerMeter</h2>
+    </a>
+  );
 }
 
-function Dashboard() {
-
-  return <h1>Pantalla de estadisticas</h1>
+/**
+ * Encabezado de pagina
+ * **/
+function AppHeader() {
+  const location = useLocation();
+  return (
+    <div className="app-header">
+      <AppLogo />
+      <div style={rowStyle}>
+        {
+          (!location.pathname.endsWith("/login")) ?
+            <Button id="btn" type="primary" href="/login">
+              Iniciar Sesion
+            </Button>
+            : <></>
+        }
+      </div>
+    </div>
+  );
 }
 
-const routes = [
-  {
-    title: 'Inicio',
-    path: '/',
-    main: () => <Dashboard />
-  },
-  {
-    title: 'Iniciar sesion',
-    path: '/login',
-    main: () => <Login />
-  },
-  {
-    title: '404',
-    path: '/*',
-    main: () => <h1>Pagina no encontrada</h1>
-  }
-];
+/**
+* Cuerpo de la pagina
+* **/
+function AppContent() {
+  return (
+    <div className="app-content-body">
+      <Routes>
+        <Route path="" element={<Landing />} />
+        <Route path="login" element={<Login />} />
+        <Route path="dashboard" element={<Dashboard />} />
+      </Routes>
+    </div>
+  );
+}
 
+/**
+* Parte de abajo de la pagina
+* **/
+function AppFooter() {
+  return (
+    <div className="app-footer">
+      <Divider />
+      <p>
+        Proyecto realizado con fines de aprendizaje para la <a href="https://www.unida.edu.py/facultades/facultad-de-ingenieria/ingenieria-informatica/">Facultad de Ing. Informatica UNIDA</a>
+      </p>
+      <p>Colaboradores:</p>
+      <p>
+        <a href="mailto:juanhr454@gmail.com">Juan Herrera</a> • <a href="mailto:deboraareliescobar@gmail.com">Debora Escobar</a> • <a href="mailto:deliaortizservin@gmail.com">Delia Ortiz</a>
+      </p>
+      <p>
+        <a href="https://github.com/imherrera/medidor-electronico">Ver codigo fuente en Github</a>
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Contenedor de la pagina
+ * **/
 function App() {
   return (
     <Router>
       <Layout style={{ minHeight: '100vh' }}>
-        <Header>
-          <Menu theme="dark" mode="horizontal">          
-            <Menu.Item>
-              Iniciar Sesion
-            </Menu.Item>
-          </Menu>
-        </Header>
+        <AppHeader />
+        <AppContent />
+        <AppFooter />
       </Layout>
     </Router>
   );
