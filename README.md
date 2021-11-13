@@ -21,7 +21,6 @@ Este directorio contiene codigo relacionado a la/s plataformas de visualizacion
 Este directorio contiene el codigo relacionado al medidor
 
 # Lenguajes, frameworks y uso
-* Go -> Servidor
-* JS, HTML, CSS: React, ANTD -> Pagina Web
-* Kotlin: Compose, Ktor, Serialization -> App Android
+* Go, Mux -> Servidor
+* JS, HTML, CSS, React, ANTD -> Pagina Web
 * C++ -> Arduino
