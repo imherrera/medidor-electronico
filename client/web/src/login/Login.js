@@ -34,10 +34,7 @@ const postLoginForm = async (form) => {
      * **/
     if (!response.ok) return { error: response.status }
 
-    return {
-        jwt: await response.json()
-    }
-
+    return await response.json()
 };
 
 function LoginFormError() {
@@ -70,7 +67,7 @@ function LoginForm() {
                  * 
                  * NOTA: esto no se debe hacer en una applicacion real
                  * ***/
-                localStorage.setItem('power-meter-jwt', res.jwt);
+                localStorage.setItem('power-meter-jwt', res.tkn);
                 localStorage.setItem('power-meter-uci', form['user_ci']);
             }
         }).catch(err => {

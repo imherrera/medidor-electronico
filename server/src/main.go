@@ -48,21 +48,21 @@ func main() {
 	auth := router.Methods("POST").Subrouter()
 	auth.HandleFunc("/login", loginHandler).Methods("POST")
 
-	app := router.Methods("GET", "POST").Subrouter()
+	app := router.Methods("GET", "POST", "OPTIONS").Subrouter()
 	app.HandleFunc("/usage/{mid}", consumptionHandler).Methods("GET", "POST")
 	app.HandleFunc("/usage/resume/{uci}", consumptionResumeHandler).Methods("GET")
 	app.Use(tokenMiddleware)
 
-	headersOK := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
-	originsOK := handlers.AllowedOrigins([]string{"*"})
-	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "DELETE", "PUT"})
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	origins := handlers.AllowedOrigins([]string{"*"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"})
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	err := http.ListenAndServe(":"+port, handlers.CombinedLoggingHandler(os.Stderr, handlers.CORS(headersOK, originsOK, methodsOK)(router)))
+	err := http.ListenAndServe(":"+port, handlers.CombinedLoggingHandler(os.Stderr, handlers.CORS(headers, origins, methods)(router)))
 	if err != nil {
 		log.Fatalln("Server Error: ", err)
 	}
@@ -81,10 +81,6 @@ func loginHandler(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
-	rw.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	rw.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
 
 	token := login(credentials)
 	if len(token) == 0 {

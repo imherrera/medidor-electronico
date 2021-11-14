@@ -18,7 +18,6 @@ const loadDashboard = async (jwt, uci) => {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${jwt}`,
-            'mode': 'cors'
         },
     };
 
