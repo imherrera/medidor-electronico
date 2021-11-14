@@ -8,6 +8,7 @@ function sleep(ms) {
 }
 
 const loadDashboard = async (jwt, uci) => {
+    await sleep(1000)
     if (!jwt || !uci) return { error: 401 }
 
     /**

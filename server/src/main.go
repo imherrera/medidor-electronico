@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -49,12 +47,12 @@ func main() {
 	auth.HandleFunc("/login", loginHandler).Methods("POST")
 
 	app := router.Methods("GET", "POST", "OPTIONS").Subrouter()
-	app.HandleFunc("/usage/{mid}", consumptionHandler).Methods("GET", "POST")
+	app.HandleFunc("/usage", consumptionHandler).Methods("GET", "POST")
 	app.HandleFunc("/usage/resume/{uci}", consumptionResumeHandler).Methods("GET")
 	app.Use(tokenMiddleware)
 
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
-	origins := handlers.AllowedOrigins([]string{"*"})
+	origins := handlers.AllowedOrigins([]string{"*"}) // <- deberiamos aceptar solo al host de nuestra pagina web
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"})
 
 	port := os.Getenv("PORT")
@@ -69,39 +67,35 @@ func main() {
 }
 
 func loginHandler(rw http.ResponseWriter, r *http.Request) {
-	body, readErr := ioutil.ReadAll(r.Body)
-	if readErr != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	credentials := UserLoginCredential{}
-	parseErr := json.Unmarshal(body, &credentials)
-	if parseErr != nil {
+	err := deserializeBody(r.Body, &credentials)
+	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	token := login(credentials)
-	if len(token) == 0 {
+	if len(token) <= 0 {
 		rw.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
 	fmt.Fprint(rw, token)
 }
 
 func consumptionHandler(rw http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	meterID := params["mid"]
-	println("Meter id", meterID)
+	consumption := EnergyUsage{}
+	err := deserializeBody(r.Body, consumption)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	registerEnergyUsage(consumption)
 }
 
 func consumptionResumeHandler(rw http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userCI := UserCI(params["uci"])
-	fmt.Println("Resume request for C.I: ", userCI)
 
-	resume := getUsageResume(UserCI(userCI))
+	resume := getEnergyUsageResume(UserCI(userCI))
 	fmt.Fprint(rw, resume)
 }

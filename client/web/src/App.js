@@ -1,5 +1,6 @@
 import './App.css';
 import logo from './logo.svg';
+import { isMobile } from './utils';
 
 import React from 'react';
 
@@ -31,7 +32,7 @@ function AppLogo() {
   return (
     <a href="/" style={rowStyle}>
       <img style={logoStyle} src={logo} alt="" />
-      <h2 style={{ margin: 0 }}>PowerMeter</h2>
+      <h2 style={{ margin: 0 }}>{isMobile() ? "M.E" : "Medidor Electronico"}</h2>
     </a>
   );
 }

@@ -1,10 +1,14 @@
 import './Login.css';
 import logo from '../logo.svg';
+import { isMobile } from '../utils';
 
 import { useState } from 'react';
+import { Navigate } from 'react-router';
 
 import { Button, Input, Form, Checkbox, Alert } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+
+
 
 const postLoginForm = async (form) => {
     /**
@@ -53,7 +57,7 @@ function LoginFormError() {
 
 
 function LoginForm() {
-    const [error, setError] = useState(false);
+    const [error, setError] = useState(null);
 
     function onFinish(form) {
         postLoginForm(form).then(res => {
@@ -74,6 +78,8 @@ function LoginForm() {
             console.error("Error submiting login form:", err)
         })
     };
+
+    if (error === false) return <Navigate to='/dashboard' />
 
     return (
         <>
@@ -134,7 +140,7 @@ function LoginForm() {
 
 function Login() {
     return (
-        <div className="login-layout">
+        <div className={isMobile() ? "" : "login-layout"}>
             <div className="login-container">
                 <img className="logo" src={logo} alt="" />
                 <LoginForm />
