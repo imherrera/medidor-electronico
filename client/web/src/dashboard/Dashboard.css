@@ -1,0 +1,10 @@
+.dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.consumption-chart {
+    width: 400px;
+    height: 200px;
+}

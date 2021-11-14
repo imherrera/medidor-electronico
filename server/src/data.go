@@ -13,10 +13,9 @@ import (
 type MeterID string
 
 type EnergyUsage struct {
-	MeterID        MeterID   `json:"meter_id"`
-	Date           time.Time `json:"date"`
-	ActualWattHour string    `json:"actual_watt_hour"`
-	ExpectWattHour string    `json:"expect_watt_hour"`
+	MeterID  MeterID   `json:"meter_id"`
+	Date     time.Time `json:"date"`
+	WattHour float64   `json:"actual_watt_hour"`
 }
 
 // Numero de cedula
@@ -40,10 +39,19 @@ var rdb *redis.Client = redis.NewClient(&redis.Options{
 var energyUsage = map[UserCI][]EnergyUsage{
 	UserCI("5444854"): {
 		{
-			MeterID:        "41250050123",
-			Date:           time.Now(),
-			ActualWattHour: "1934W",
-			ExpectWattHour: "2000W",
+			MeterID:  "41250050123",
+			Date:     time.Now(),
+			WattHour: 200.0,
+		},
+		{
+			MeterID:  "41250050123",
+			Date:     time.Now(),
+			WattHour: 300.0,
+		},
+		{
+			MeterID:  "41250050123",
+			Date:     time.Now(),
+			WattHour: 290,
 		},
 	},
 }
