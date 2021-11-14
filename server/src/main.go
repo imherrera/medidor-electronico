@@ -53,19 +53,16 @@ func main() {
 	app.HandleFunc("/usage/resume/{uci}", consumptionResumeHandler).Methods("GET")
 	app.Use(tokenMiddleware)
 
-	/**
-	 * Inicializamos nuestro servidor http
-	**/
-	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
-	origins := handlers.AllowedOrigins([]string{"*"}) // os.Getenv("ORIGIN_ALLOWED")
-	methods := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"})
+	headersOK := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+	originsOK := handlers.AllowedOrigins([]string{"*"})
+	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "DELETE", "PUT"})
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	err := http.ListenAndServe(":"+port, handlers.CORS(origins, headers, methods)(router))
+	err := http.ListenAndServe(":"+port, handlers.CombinedLoggingHandler(os.Stderr, handlers.CORS(headersOK, originsOK, methodsOK)(router)))
 	if err != nil {
 		log.Fatalln("Server Error: ", err)
 	}
@@ -84,6 +81,10 @@ func loginHandler(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	rw.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
 
 	token := login(credentials)
 	if len(token) == 0 {
