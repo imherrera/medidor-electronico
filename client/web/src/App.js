@@ -1,12 +1,14 @@
 import './App.css';
 import logo from './logo.svg';
 
+import React from 'react';
+
 import { Layout, Divider, Button } from 'antd';
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 
 import Landing from './Landing';
-import Dashboard from './Dashboard';
-import Login from './Login';
+import Dashboard from './dashboard/Dashboard';
+import Login from './login/Login';
 
 
 /**

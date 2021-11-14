@@ -1,99 +1,110 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
-	"encoding/json"
-	"time"
-
-	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
-// Numero de medidor
-type MeterID string
-
-type EnergyConsumption struct {
-	OwnerCI        UserCI    `json:"user_cid"`
-	MeterID        MeterID   `json:"meter_id"`
-	Date           time.Time `json:"date"`
-	ActualWattHour string    `json:"actual_watt_hour"`
-	ExpectWattHour string    `json:"expect_watt_hour"`
+func jsonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(rw, r)
+	})
 }
 
-// Numero de cedula
-type UserCI string
-
-type User struct {
-	UserCI   UserCI `json:"user_cid"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-var rdb *redis.Client = redis.NewClient(&redis.Options{
-	Addr:     "localhost:1300",
-	Password: "", // no password set
-	DB:       0,  // use default DB
-})
-
-func getUsageResume(ucid UserCI) ([]byte, error) {
-	mock := EnergyConsumption{
-		OwnerCI:        ucid,
-		MeterID:        "41250050123",
-		Date:           time.Now(),
-		ActualWattHour: "1934W",
-		ExpectWattHour: "2000W",
-	}
-	return json.Marshal(mock)
-}
-
-func putUsage(data EnergyConsumption) {
-	println("Putooooo")
+/**
+ * Middleware que interceptara los pedidos a este servidor
+ * y validara los tokens de autorizacion, en caso de invalidez el pedido sera rechazado
+**/
+func tokenMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		userCI := UserCI(params["uci"])
+		// Hacemos una pequeña sanitizacion del token
+		token := r.Header.Get("Authorization")
+		token = strings.Replace(token, "Bearer ", "", 1)
+		token = strings.TrimSpace(token)
+		// Rechazamos pedido en caso de invalidez
+		if !tokenIsValid(userCI, token) {
+			rw.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(rw, r) // Dejamos pasar al pedido
+	})
 }
 
 func main() {
 	router := mux.NewRouter()
+	router.Use(jsonMiddleware)
 
-	router.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(rw, "Hey there!")
-	})
+	auth := router.Methods("POST").Subrouter()
+	auth.HandleFunc("/login", loginHandler).Methods("POST")
 
-	router.HandleFunc("/login", func(rw http.ResponseWriter, r *http.Request) {
-
-	})
-
-	/**
-	* Tomamos el nro de medidor y registramos o devolvemos el uso de acuerdo al metodo de request
-	**/
-	router.HandleFunc("/usage/{mid}", energyConsumption).Methods("GET", "POST")
+	app := router.Methods("GET", "POST").Subrouter()
+	app.HandleFunc("/usage/{mid}", consumptionHandler).Methods("GET", "POST")
+	app.HandleFunc("/usage/resume/{uci}", consumptionResumeHandler).Methods("GET")
+	app.Use(tokenMiddleware)
 
 	/**
-	* Tomamos el nro de cedula como parametro y devolvemos un resumen de uso
+	 * Inicializamos nuestro servidor http
 	**/
-	router.HandleFunc("/usage/resume/{uci}", getEnergyConsumptionResume).Methods("GET")
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+	origins := handlers.AllowedOrigins([]string{"*"}) // os.Getenv("ORIGIN_ALLOWED")
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"})
 
-	// Init http server
-	err := http.ListenAndServe(":8080", router)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	err := http.ListenAndServe(":"+port, handlers.CORS(origins, headers, methods)(router))
 	if err != nil {
 		log.Fatalln("Server Error: ", err)
 	}
 }
 
-func energyConsumption(rw http.ResponseWriter, r *http.Request) {
-	meterID := mux.Vars(r)["mid"]
+func loginHandler(rw http.ResponseWriter, r *http.Request) {
+	body, readErr := ioutil.ReadAll(r.Body)
+	if readErr != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	credentials := UserLoginCredential{}
+	parseErr := json.Unmarshal(body, &credentials)
+	if parseErr != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	token := login(credentials)
+	if len(token) == 0 {
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	fmt.Fprint(rw, token)
+}
+
+func consumptionHandler(rw http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	meterID := params["mid"]
 	println("Meter id", meterID)
 }
 
-func getEnergyConsumptionResume(rw http.ResponseWriter, r *http.Request) {
-	userCI := mux.Vars(r)["uci"]
+func consumptionResumeHandler(rw http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userCI := UserCI(params["uci"])
+	fmt.Println("Resume request for C.I: ", userCI)
 
-	json, err := getUsageResume(UserCI(userCI))
-
-	if err != nil {
-		log.Fatalln("Error retrieving resume:", err)
-	}
-
-	fmt.Fprint(rw, string(json))
+	resume := getUsageResume(UserCI(userCI))
+	fmt.Fprint(rw, resume)
 }
