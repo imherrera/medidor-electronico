@@ -15,7 +15,7 @@ type MeterID string
 type EnergyUsage struct {
 	MeterID  MeterID   `json:"meter_id"`
 	Date     time.Time `json:"date"`
-	WattHour float64   `json:"actual_watt_hour"`
+	WattHour float64   `json:"watt_hour"`
 }
 
 // Numero de cedula
@@ -40,12 +40,27 @@ var energyUsage = map[UserCI][]EnergyUsage{
 	UserCI("5444854"): {
 		{
 			MeterID:  "41250050123",
-			Date:     time.Now(),
+			Date:     time.Now().Add(time.Hour * time.Duration(1)),
 			WattHour: 200.0,
 		},
 		{
 			MeterID:  "41250050123",
-			Date:     time.Now(),
+			Date:     time.Now().Add(time.Hour * time.Duration(2)),
+			WattHour: 300.0,
+		},
+		{
+			MeterID:  "41250050123",
+			Date:     time.Now().Add(time.Hour * time.Duration(3)),
+			WattHour: 290,
+		},
+		{
+			MeterID:  "41250050123",
+			Date:     time.Now().Add(time.Hour * time.Duration(4)),
+			WattHour: 200.0,
+		},
+		{
+			MeterID:  "41250050123",
+			Date:     time.Now().Add(time.Hour * time.Duration(5)),
 			WattHour: 300.0,
 		},
 		{

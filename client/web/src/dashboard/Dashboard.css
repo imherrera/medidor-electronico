@@ -4,7 +4,7 @@
     align-items: center;
 }
 
-.consumption-chart {
-    width: 400px;
-    height: 200px;
+.chart {
+    background: white;
+    border-style: 1px solid lightgrey;
 }

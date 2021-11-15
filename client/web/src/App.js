@@ -5,7 +5,7 @@ import { isMobile } from './utils';
 import React from 'react';
 
 import { Layout, Divider, Button } from 'antd';
-import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
 import Landing from './Landing';
 import Dashboard from './dashboard/Dashboard';
@@ -49,7 +49,7 @@ function AppHeader() {
         {
           (!location.pathname.endsWith("/login")) ?
             <Button id="btn" type="primary" href="/login">
-              Iniciar Sesion
+              Cerrar Sesion
             </Button>
             : <></>
         }
@@ -65,7 +65,7 @@ function AppContent() {
   return (
     <div className="app-content-body">
       <Routes>
-        <Route path="" element={<Landing />} />
+        <Route path="" element={<Navigate to="/dashboard" />} />
         <Route path="login" element={<Login />} />
         <Route path="dashboard" element={<Dashboard />} />
       </Routes>
