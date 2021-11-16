@@ -1,89 +1,58 @@
+#include <Ethernet.h>
 #include <ArduinoHttpClient.h>
 #include <ArduinoJson.h>
-#include <Ethernet.h>
 #include <EmonLib.h>
-#include <SPI.h>
 
-// Enter a MAC address for your controller below.
-// Newer Ethernet shields have a MAC address printed on a sticker on the shield
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+/**
+ * Constantes de programa
+ */
+const char uniqueDeviceId[] = "41250050123";       // id unico para identificar este medidor en el servidor
+const char reportPath[] = "/report/watt-hour";     // ruta para reporte de consumo
+const char server[] = "192.168.0.12";              // host de la api
+const short port = 8080;                           // puerto de acceso
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED}; // Direccion MAC
 
-// if you don't want to use DNS (and reduce your sketch size)
-// use the numeric IP instead of the name for the server:
-IPAddress server(192, 168, 0, 12); // numeric IP for Google (no DNS)
-//char server[] = "192.168.0.12";    // name address for Google (using DNS)
+/**
+ * Conexion a nuestro shield de internet
+ */
+EthernetClient ethernet;
 
-// Set the static IP address to use if the DHCP fails to assign
-IPAddress ip(192, 168, 0, 177);
-IPAddress myDns(192, 168, 0, 1);
-
-// Initialize the Ethernet client library
-// with the IP address and port of the server
-// that you want to connect to (port 80 is default for HTTP):
-EthernetClient client;
-
-// Variables to measure the speed
-unsigned long beginMicros, endMicros;
-unsigned long byteCount = 0;
-bool printWebData = true; // set to false for better speed measurement
+/**
+ * Instancia de cliente http con una conexion a nuestra API
+ */
+HttpClient client = HttpClient(ethernet, server, port);
 
 /**
  * Codigo a ejecutarse al inicio
  */
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(9600);
 
-  // start the Ethernet connection:
-  Serial.println("Initialize Ethernet with DHCP:");
   if (Ethernet.begin(mac) == 0)
   {
-    Serial.println("Failed to configure Ethernet using DHCP");
+    Serial.println(F("Fallo al configurar Ethernet usando DHCP"));
     // Check for Ethernet hardware present
     if (Ethernet.hardwareStatus() == EthernetNoHardware)
     {
-      Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+      Serial.println(F("El ethernet shield no esta conectado!"));
       while (true)
       {
-        delay(1); // do nothing, no point running without Ethernet hardware
+        delay(1);
       }
     }
     if (Ethernet.linkStatus() == LinkOFF)
-    {
-      Serial.println("Ethernet cable is not connected.");
-    }
-    // try to congifure using IP address instead of DHCP:
-    Ethernet.begin(mac, ip, myDns);
+      Serial.println(F("El cable de lan no esta conectado!"));
   }
   else
   {
-    Serial.print("  DHCP assigned IP ");
+    Serial.print(F("  DHCP asigno IP "));
     Serial.println(Ethernet.localIP());
   }
-  // give the Ethernet shield a second to initialize:
+  // esperamos a que el ethernet shield inicialice
   delay(1000);
-  Serial.print("connecting to ");
-  Serial.print(server);
-  Serial.println("...");
 
-  // if you get a connection, report back via serial:
-  if (client.connect(server, 8080))
-  {
-    Serial.print("connected to ");
-    Serial.println(client.remoteIP());
-    // Make a HTTP request:
-    client.println("GET /search?q=arduino HTTP/1.1");
-    client.println("Host: www.google.com");
-    client.println("Connection: close");
-    client.println();
-  }
-  else
-  {
-    // if you didn't get a connection to the server:
-    Serial.println("connection failed");
-  }
-  beginMicros = micros();
+  Serial.println(F("Conectando al servidor..."));
 }
 
 /**
@@ -91,56 +60,39 @@ void setup()
  */
 void loop()
 {
-  // if there are incoming bytes available
-  // from the server, read them and print them:
-  int len = client.available();
-  if (len > 0)
-  {
-    byte buffer[80];
-    if (len > 80)
-      len = 80;
-    client.read(buffer, len);
-    if (printWebData)
-    {
-      Serial.write(buffer, len); // show in the serial monitor (slows some boards)
-    }
-    byteCount = byteCount + len;
-  }
+  // TODO: remove
+  float usage = random(20, 50);
+  Serial.print("Usage: ");
+  Serial.println(usage);
 
-  // if the server's disconnected, stop the client:
-  if (!client.connected())
-  {
-    endMicros = micros();
-    Serial.println();
-    Serial.println("disconnecting.");
-    client.stop();
-    Serial.print("Received ");
-    Serial.print(byteCount);
-    Serial.print(" bytes in ");
-    float seconds = (float)(endMicros - beginMicros) / 1000000.0;
-    Serial.print(seconds, 4);
-    float rate = (float)byteCount / seconds / 1000.0;
-    Serial.print(", rate = ");
-    Serial.print(rate);
-    Serial.print(" kbytes/second");
-    Serial.println();
+  /**
+   * Preparamos el reporte de consumo
+   */
+  const int capacity = JSON_OBJECT_SIZE(3);
+  StaticJsonDocument<capacity> doc;
+  doc["meter_id"] = uniqueDeviceId;
+  doc["date"] = "2021-11-16T12:59:20.0268798-03:00";
+  doc["watt_hour"] = usage;
 
-    // do nothing forevermore:
-    while (true)
-    {
-      delay(1);
-    }
-  }
+  /**
+   * Serializamos a un string JSON
+   */
+  size_t reportLength = measureJson(doc) + 1; // + 1 para el incluir el terminador
+  char report[reportLength];
+  serializeJson(doc, report, reportLength);
 
-  DynamicJsonDocument doc(1024);
-  doc["sensor"] = "gps";
-  doc["time"] = 1351824120;
-  doc["data"][0] = 48.756080;
-  doc["data"][1] = 2.302038;
-  serializeJson(doc, Serial);
+  /**
+   * Enviamos el reporte al servidor 
+   */
+  Serial.println("Sending report...");
+  client.beginRequest();
+  client.post(reportPath);
+  client.sendHeader("Content-Type", "application/json");
+  client.sendHeader("Content-Length", reportLength);
+  client.beginBody();
+  client.print(report);
+  client.endRequest();
 
-  digitalWrite(LED_BUILTIN, HIGH); // turn the LED on (HIGH is the voltage level)
-  delay(1000);                     // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);  // turn the LED off by making the voltage LOW
-  delay(5000);                     // wait for a second
+  Serial.println("Wait five seconds");
+  delay(5000);
 }
