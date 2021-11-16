@@ -4,7 +4,7 @@ import { isMobile } from './utils';
 
 import React from 'react';
 
-import { Layout, Divider, Button } from 'antd';
+import { Layout, Divider, Button, Avatar, Space } from 'antd';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
 import Landing from './Landing';
@@ -32,9 +32,15 @@ function AppLogo() {
   return (
     <a href="/" style={rowStyle}>
       <img style={logoStyle} src={logo} alt="" />
-      <h2 style={{ margin: 0 }}>{isMobile() ? "M.E" : "Medidor Electronico"}</h2>
+      <h2 style={{ margin: 0 }}>{isMobile() ? "" : "Medidor Electronico"}</h2>
     </a>
   );
+}
+
+
+function closeSession() {
+  localStorage.setItem('power-meter-jwt', null);
+  localStorage.setItem('power-meter-uci', null);
 }
 
 /**
@@ -48,9 +54,12 @@ function AppHeader() {
       <div style={rowStyle}>
         {
           (!location.pathname.endsWith("/login")) ?
-            <Button id="btn" type="primary" href="/login">
-              Cerrar Sesion
-            </Button>
+            <Space direction="horizontal">
+              <Avatar style={{ backgroundColor: '#f56a00' }}>JP</Avatar>
+              <Button onClick={closeSession} id="btn" type="primary" href="/login">
+                Cerrar Sesion
+              </Button>
+            </Space>
             : <></>
         }
       </div>
