@@ -13,28 +13,11 @@ import (
 // Numero de medidor
 type MeterID string
 
-// Fecha de reporte
-type ReportTime time.Time
-
-/*// Implement Marshaler and Unmarshaler interface
-func (j *ReportTime) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), "\"")
-	t, err := time.Parse("2006-01-02", s)
-	if err != nil {
-		return err
-	}
-	*j = ReportTime(t)
-	return nil
-}
-
-func (j ReportTime) MarshalJSON() ([]byte, error) {
-	return json.Marshal(time.Time(j))
-}*/
-
 type EnergyUsage struct {
 	MeterID  MeterID   `json:"meter_id"`
 	Date     time.Time `json:"date"`
 	WattHour float64   `json:"watt_hour"`
+	AmpsHour float64   `json:"amps_hour"`
 }
 
 // Numero de cedula
@@ -56,38 +39,7 @@ var rdb *redis.Client = redis.NewClient(&redis.Options{
  * Mapa para relacionar los C.I -> Uso de Medidor
 **/
 var energyUsage = map[UserCI][]EnergyUsage{
-	UserCI("5444854"): {
-		/*{
-			MeterID: "41250050123",
-			Date:     time.Now(),
-			WattHour: 290,
-		},
-		{
-			MeterID:  "41250050123",
-			Date:     ReportTime(time.Now().Add(time.Hour * time.Duration(1))),
-			WattHour: 200.0,
-		},
-		{
-			MeterID:  "41250050123",
-			Date:     ReportTime(time.Now().Add(time.Hour * time.Duration(2))),
-			WattHour: 300.0,
-		},
-		{
-			MeterID:  "41250050123",
-			Date:     ReportTime(time.Now().Add(time.Hour * time.Duration(3))),
-			WattHour: 290,
-		},
-		{
-			MeterID:  "41250050123",
-			Date:     ReportTime(time.Now().Add(time.Hour * time.Duration(4))),
-			WattHour: 200.0,
-		},
-		{
-			MeterID:  "41250050123",
-			Date:     ReportTime(time.Now().Add(time.Hour * time.Duration(5))),
-			WattHour: 300.0,
-		},*/
-	},
+	UserCI("5444854"): {},
 }
 
 /**
@@ -107,7 +59,6 @@ func getEnergyUsageResume(userCI UserCI) string {
 }
 
 func registerEnergyUsage(data EnergyUsage) {
-	time.Now()
 	// Buscamos a que C.I corresponde este Nro. de medidor
 	ownerCI := energyMonitorOwners[data.MeterID]
 	// Añadimos el uso, al registro de este C.I

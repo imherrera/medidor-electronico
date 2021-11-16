@@ -25,7 +25,7 @@ type UserAccessCredential struct {
 
 var tokens = map[UserCI]UserAccessCredential{}
 var passwords = map[UserCI]string{
-	UserCI("5444854"): "sss",
+	UserCI("5444854"): "Awdv41WE",
 }
 
 /**

@@ -29,7 +29,7 @@ func jsonMiddleware(next http.Handler) http.Handler {
  * y validara los tokens de autorizacion obtenidos en el login de usuario,
  * en caso de invalidez el pedido sera rechazado
 **/
-func tokenMiddleware(next http.Handler) http.Handler {
+func webappTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 		userCI := UserCI(params["uci"])
@@ -46,18 +46,28 @@ func tokenMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+var secret string
+
+/**
+ * Autorizamos solo a nuestro arduino a enviar datos
+**/
+func deviceTokenMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if token != secret {
+			rw.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(rw, r)
+	})
+}
+
 /**
  * Punto de entrada del programa
 **/
 func main() {
 	router := mux.NewRouter()
 	router.Use(jsonMiddleware)
-
-	/**
-	 * Rutas para la recoleccion de metricas de uso
-	**/
-	arduino := router.Methods("POST").Subrouter()
-	arduino.HandleFunc("/report/watt-hour", consumptionReportHandler).Methods("POST")
 
 	/**
 	 * Rutas para la autentificacion de cliente
@@ -70,7 +80,14 @@ func main() {
 	**/
 	app := router.Methods("GET", "POST", "OPTIONS").Subrouter()
 	app.HandleFunc("/usage/resume/{uci}", consumptionResumeHandler).Methods("GET")
-	app.Use(tokenMiddleware)
+	app.Use(webappTokenMiddleware)
+
+	/**
+	 * Rutas para la recoleccion de metricas de uso
+	**/
+	arduino := router.Methods("POST").Subrouter()
+	arduino.HandleFunc("/report/watt-hour", consumptionReportHandler).Methods("POST")
+	arduino.Use(deviceTokenMiddleware)
 
 	/**
 	 * Setup global de headers y CORS
@@ -86,6 +103,8 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+
+	secret = os.Getenv("ARDUINO_SECRET")
 
 	/**
 	 * Iniciamos el servidor HTTP con un logger para debug
@@ -118,12 +137,7 @@ func consumptionReportHandler(rw http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(bytes, &consumption)
 	// TODO: eliminar linea cuando arduino pueda enviar fecha
 	consumption.Date = time.Now()
-
-	fmt.Println("Report received:", consumption)
 	registerEnergyUsage(consumption)
-
-	response, _ := json.Marshal(consumption)
-	fmt.Fprint(rw, string(response))
 }
 
 func consumptionResumeHandler(rw http.ResponseWriter, r *http.Request) {
