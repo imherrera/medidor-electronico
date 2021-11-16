@@ -11,6 +11,7 @@ const char reportPath[] = "/report/watt-hour";     // ruta para reporte de consu
 const char server[] = "192.168.0.12";              // host de la api
 const short port = 8080;                           // puerto de acceso
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED}; // Direccion MAC
+const double lineVoltage = 220.0;                  // voltaje de lineas de py
 
 /**
  * Conexion a nuestro shield de internet
@@ -23,11 +24,19 @@ EthernetClient ethernet;
 HttpClient client = HttpClient(ethernet, server, port);
 
 /**
+ *  Instancia de libreria para medir el consumo de potencia
+ */
+EnergyMonitor emon1; // Create an instance
+
+/**
  * Codigo a ejecutarse al inicio
  */
 void setup()
 {
+  // Conectamos el puerto serial para debbugin
   Serial.begin(9600);
+  // Seteamos el pin del sensor y voltaje de circuito a medir (220v paraguay)
+  emon1.current(1, 30); // Current: input pin, calibration.
 
   if (Ethernet.begin(mac) == 0)
   {
@@ -61,9 +70,10 @@ void setup()
 void loop()
 {
   // TODO: remove
-  float usage = random(20, 50);
-  Serial.print("Usage: ");
-  Serial.println(usage);
+  double amps = emon1.calcIrms(1480);
+  double watts = (amps * lineVoltage);
+  Serial.print("Power: ");
+  Serial.println(watts);
 
   /**
    * Preparamos el reporte de consumo
@@ -71,8 +81,8 @@ void loop()
   const int capacity = JSON_OBJECT_SIZE(3);
   StaticJsonDocument<capacity> doc;
   doc["meter_id"] = uniqueDeviceId;
-  doc["date"] = "2021-11-16T12:59:20.0268798-03:00";
-  doc["watt_hour"] = usage;
+  doc["date"] = "2021-11-16T12:59:20.0268798-03:00"; // <- esta fecha se remplaza en el lado del servidor, esta aca hasta que agreguemos algun dispositivo para el tiempo
+  doc["watt_hour"] = watts;
 
   /**
    * Serializamos a un string JSON
@@ -93,6 +103,6 @@ void loop()
   client.print(report);
   client.endRequest();
 
-  Serial.println("Wait five seconds");
+  // Esperamos 5 seg para el siguiente envio
   delay(5000);
 }
