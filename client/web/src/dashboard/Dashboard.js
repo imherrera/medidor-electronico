@@ -113,7 +113,7 @@ function Dashboard() {
                 <div className="flex-container">
                     <div className="col">
                         <h5>Hoy</h5>
-                        <h1>{(data) ? replaceLast(data.cost.toFixed(2), '.', ',') : "calculando..."}₲</h1>
+                        <h1>{(data) ? replaceLast(data.cost.toFixed(2), '.', ',') : "calculando..."} ₲</h1>
                         <h1>{(data) ? data.consumption : 'calculando...'} wH</h1>
                     </div>
                     <div className="col">
@@ -123,7 +123,7 @@ function Dashboard() {
                     </div>
                     <div className="col">
                         <h5>Este mes</h5>
-                        <h1>{(data) ? replaceLast(data.cost.toFixed(2), '.', ',') : "calculando..."}₲</h1>
+                        <h1>{(data) ? replaceLast(data.cost.toFixed(2), '.', ',') : "calculando..."} ₲</h1>
                         <h1>{(data) ? (data.consumption / 1000).toFixed(0) : 'calculando...'} KwH</h1>
                     </div>
                     <div className="col">
