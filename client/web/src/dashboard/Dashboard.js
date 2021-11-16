@@ -110,7 +110,7 @@ function Dashboard() {
         <div className="dashboard-layout">
             <div className="month-resume" title={<h1>Resumen del mes</h1>}>
                 <div><h3>Resumen de tarifas y consumo</h3></div>
-                <div className="row">
+                <div className="flex-container">
                     <div className="col">
                         <h5>Hoy</h5>
                         <h1>{(data) ? replaceLast(data.cost.toFixed(2), '.', ',') : "calculando..."}₲</h1>
@@ -143,9 +143,8 @@ function Dashboard() {
             </div>
 
             <h1 className="chart-title">Consumo de las ultimas 24hs</h1>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer height={300}>
                 <LineChart
-
                     data={(data) ? data.graph : []}
                     margin={{
                         top: 10,

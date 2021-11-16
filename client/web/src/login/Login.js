@@ -140,7 +140,7 @@ function LoginForm() {
 
 function Login() {
     return (
-        <div className={isMobile() ? "" : "login-layout"}>
+        <div className={"login-layout"}>
             <div className="login-container">
                 <img className="logo" src={logo} alt="" />
                 <LoginForm />
