@@ -10,6 +10,9 @@
 * 2 x 10k Ohm resistores
 * 1 x 10uF capacitores
 
+![image info](https://learn.openenergymonitor.org/electricity-monitoring/ct-sensors/files/currentOnly_bb.png)
+
+
 # Estructura del proyecto
 ###### Server:
 Este directorio contiene todo el codigo relacionado a el backend
