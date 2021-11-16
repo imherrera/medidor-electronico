@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -54,7 +57,7 @@ func main() {
 	 * Rutas para la recoleccion de metricas de uso
 	**/
 	arduino := router.Methods("POST").Subrouter()
-	arduino.HandleFunc("/report/watt-hour", consumptionHandler).Methods("GET", "POST")
+	arduino.HandleFunc("/report/watt-hour", consumptionReportHandler).Methods("POST")
 
 	/**
 	 * Rutas para la autentificacion de cliente
@@ -109,14 +112,18 @@ func loginHandler(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(rw, token)
 }
 
-func consumptionHandler(rw http.ResponseWriter, r *http.Request) {
+func consumptionReportHandler(rw http.ResponseWriter, r *http.Request) {
 	consumption := EnergyUsage{}
-	err := deserializeBody(r.Body, consumption)
-	if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	bytes, _ := ioutil.ReadAll(r.Body)
+	json.Unmarshal(bytes, &consumption)
+	// TODO: eliminar linea cuando arduino pueda enviar fecha
+	consumption.Date = time.Now()
+
+	fmt.Println("Report received:", consumption)
 	registerEnergyUsage(consumption)
+
+	response, _ := json.Marshal(consumption)
+	fmt.Fprint(rw, string(response))
 }
 
 func consumptionResumeHandler(rw http.ResponseWriter, r *http.Request) {
