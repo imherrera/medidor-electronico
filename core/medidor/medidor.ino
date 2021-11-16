@@ -2,16 +2,12 @@
 #include <ArduinoHttpClient.h>
 #include <ArduinoJson.h>
 #include <EmonLib.h>
+#include "secret.h"
 
 /**
  * Constantes de programa
  */
-const char uniqueDeviceId[] = "41250050123";       // id unico para identificar este medidor en el servidor
-const char reportPath[] = "/report/watt-hour";     // ruta para reporte de consumo
-const char server[] = "192.168.0.12";              // host de la api
-const short port = 8080;                           // puerto de acceso
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED}; // Direccion MAC
-const double lineVoltage = 220.0;                  // voltaje de lineas de py
+const double lineVoltage = 220.0; // voltaje de lineas de py
 
 /**
  * Conexion a nuestro shield de internet
@@ -36,7 +32,7 @@ void setup()
   // Conectamos el puerto serial para debbugin
   Serial.begin(9600);
   // Seteamos el pin del sensor y voltaje de circuito a medir (220v paraguay)
-  emon1.current(1, 30); // Current: input pin, calibration.
+  emon1.current(1, 80); // Current: input pin, calibration.
 
   if (Ethernet.begin(mac) == 0)
   {
@@ -65,44 +61,64 @@ void setup()
 }
 
 /**
+ * Tiempo del ultimo envio al servidor
+ */
+unsigned long timeSinceLastReport = 0;
+
+double amps = 0;
+long samples = 0;
+
+/**
  * Loop a ejecutarse indefinidamente luego de setup
  */
 void loop()
 {
-  // TODO: remove
-  double amps = emon1.calcIrms(1480);
-  double watts = (amps * lineVoltage);
-  Serial.print("Power: ");
-  Serial.println(watts);
-
-  /**
+  amps = amps + emon1.calcIrms(4000);
+  samples = samples + 1;
+  // Check si paso 5 segundos del ultimo envio
+  if ((millis() - timeSinceLastReport) >= 5000)
+  {
+    double mamps = (amps / samples);
+    double watts = (mamps * lineVoltage);
+    Serial.print("Samples: ");
+    Serial.println(samples);
+    Serial.print("Amps: ");
+    Serial.println(mamps);
+    Serial.print("Watts: ");
+    Serial.println(watts);
+    /**
    * Preparamos el reporte de consumo
    */
-  const int capacity = JSON_OBJECT_SIZE(3);
-  StaticJsonDocument<capacity> doc;
-  doc["meter_id"] = uniqueDeviceId;
-  doc["date"] = "2021-11-16T12:59:20.0268798-03:00"; // <- esta fecha se remplaza en el lado del servidor, esta aca hasta que agreguemos algun dispositivo para el tiempo
-  doc["watt_hour"] = watts;
+    const int capacity = JSON_OBJECT_SIZE(4);
+    StaticJsonDocument<capacity> doc;
+    doc["meter_id"] = uniqueDeviceId;
+    doc["date"] = "2021-11-16T12:59:20.0268798-03:00"; // <- esta fecha se remplaza en el lado del servidor, esta aca hasta que agreguemos algun dispositivo para el tiempo
+    doc["watt_hour"] = watts;
+    doc["amps_hour"] = mamps;
 
-  /**
+    /**
    * Serializamos a un string JSON
    */
-  size_t reportLength = measureJson(doc) + 1; // + 1 para el incluir el terminador
-  char report[reportLength];
-  serializeJson(doc, report, reportLength);
+    size_t reportLength = measureJson(doc) + 1; // + 1 para el incluir el terminador
+    char report[reportLength];
+    serializeJson(doc, report, reportLength);
 
-  /**
-   * Enviamos el reporte al servidor 
-   */
-  Serial.println("Sending report...");
-  client.beginRequest();
-  client.post(reportPath);
-  client.sendHeader("Content-Type", "application/json");
-  client.sendHeader("Content-Length", reportLength);
-  client.beginBody();
-  client.print(report);
-  client.endRequest();
+    /**
+    * Enviamos el reporte al servidor 
+    */
+    Serial.println("Sending report...");
+    client.beginRequest();
+    client.post(reportPath);
+    client.sendHeader("Authorization", uniqueDeviceSecret);
+    client.sendHeader("Content-Type", "application/json");
+    client.sendHeader("Content-Length", reportLength);
+    client.beginBody();
+    client.print(report);
+    client.endRequest();
 
-  // Esperamos 5 seg para el siguiente envio
-  delay(5000);
+    // Guardamos el ultimo tiempo de envio
+    timeSinceLastReport = millis();
+    amps = 0;
+    samples = 0;
+  }
 }
