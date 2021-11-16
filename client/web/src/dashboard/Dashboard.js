@@ -114,7 +114,7 @@ function Dashboard() {
                     <div className="col">
                         <h5>Hoy</h5>
                         <h1>{(data) ? replaceLast(data.cost.toFixed(2), '.', ',') : "calculando..."} ₲</h1>
-                        <h1>{(data) ? data.consumption : 'calculando...'} wH</h1>
+                        <h1>{(data) ? data.consumption.toFixed(2) : 'calculando...'} wH</h1>
                     </div>
                     <div className="col">
                         <h5>Ayer</h5>
