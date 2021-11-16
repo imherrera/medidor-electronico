@@ -7,7 +7,6 @@ import React from 'react';
 import { Layout, Divider, Button, Avatar, Space } from 'antd';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
-import Landing from './Landing';
 import Dashboard from './dashboard/Dashboard';
 import Login from './login/Login';
 
