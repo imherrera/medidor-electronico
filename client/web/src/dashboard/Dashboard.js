@@ -4,7 +4,7 @@ import { replaceLast } from '../utils';
 import { Navigate } from 'react-router-dom'
 import { useState, useEffect } from "react";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, } from 'recharts';
 
 
 const kwhHomePrice = 365.45;
@@ -77,7 +77,8 @@ function Dashboard() {
              * Mapeador de respuesta de api a objeto para representar en graficos
              * **/
             const mapToUi = (e) => ({
-                name: 'W/5s',
+                yname: 'W',
+                xname: '5s',
                 watts: e.watt_hour,
                 amps: e.amps_hour,
                 pv: new Date(e.date).toTimeString(),
@@ -90,19 +91,17 @@ function Dashboard() {
             for (let i in res.reverse()) {
                 const e = res[i];
                 cost += getCost(e.watt_hour);
-                // suma del consumo de ultima hora
-                if (i <= 719) {
+                // suma del consumo de las ultimas 24 horas
+                if (i <= 17280) {
                     consumption += e.watt_hour;
                 }
 
-                if (i < 24) graph.push(mapToUi(e));
+                if (i <= 12) graph.push(mapToUi(e));
             }
             setData({
                 graph: graph.reverse(),
                 cost: cost,
-                consumption:
-                    // consumo de watts por hora
-                    (consumption / 720)
+                consumption: (consumption / 17280)// consumo de watts por hora
             });
 
             // Volvemos a hacer esta llamada luego de 5seg
@@ -128,8 +127,8 @@ function Dashboard() {
                 <div className="flex-container">
                     <div className="col">
                         <h5>Ahora</h5>
-                        <h1>{(data) ? data.graph[data.graph.length - 1].watts.toFixed(2) : 'calculando...'} W/5s</h1>
-                        <h1>{(data) ? data.graph[data.graph.length - 1].amps.toFixed(2) : 'calculando...'} A/5s</h1>
+                        <h1>{(data && data.graph.length > 0) ? data.graph[data.graph.length - 1].watts.toFixed(2) : 'calculando...'} W</h1>
+                        <h1>{(data && data.graph.length > 0) ? data.graph[data.graph.length - 1].amps.toFixed(2) : 'calculando...'} A</h1>
                     </div>
                     <div className="col">
                         <h5>Hoy</h5>
@@ -144,7 +143,7 @@ function Dashboard() {
                     <div className="col">
                         <h5>Este mes</h5>
                         <h1>{(data) ? guaranies.format(data.cost) : "calculando..."}</h1>
-                        <h1>{(data) ? (data.consumption / 1000).toFixed(0) : 'calculando...'} kWh</h1>
+                        <h1>{(data) ? (data.consumption / 1000).toFixed(2) : 'calculando...'} kWh</h1>
                     </div>
                     <div className="col">
                         <h5>El mes pasado</h5>
@@ -173,12 +172,13 @@ function Dashboard() {
                         bottom: 0,
                     }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
+                    <CartesianGrid strokeDasharray={10} />
+                    <XAxis dataKey="xname" />
                     <YAxis />
                     <Tooltip />
-                    <Line type="monotone" dataKey="watts" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="watts" stroke="#8884d8" />
                     <Line type="monotone" dataKey="amps" stroke="#82ca9d" />
+                    <Legend />
                 </LineChart>
             </ResponsiveContainer>
         </div>
