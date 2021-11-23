@@ -1,6 +1,0 @@
-{
-    "port": "COM8",
-    "board": "arduino:avr:uno",
-    "programmer": "arduino:avrisp",
-    "sketch": "medidor.ino"
-}
