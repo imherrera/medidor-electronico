@@ -29,7 +29,7 @@ const loadDashboard = async (jwt, uci) => {
      * Llamada a nuestro servidor para que nos devuelve el resumen de uso
      * correspondiente a el usuario con C.I
      * **/
-    const response = await fetch(`http://192.168.0.12:8080/usage/resume/${uci}`, params);
+    const response = await fetch(`https://medidor-electronico-server.herokuapp.com/usage/resume/${uci}`, params);
 
     if (!response.ok) return { error: response.status }
 
