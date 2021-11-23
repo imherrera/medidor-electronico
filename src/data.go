@@ -6,8 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"time"
-
-	"github.com/go-redis/redis/v8"
 )
 
 // Numero de medidor
@@ -29,11 +27,6 @@ type User struct {
 	Password string `json:"password"`
 }
 
-var rdb *redis.Client = redis.NewClient(&redis.Options{
-	Addr:     "localhost:1300",
-	Password: "", // no password set
-	DB:       0,  // use default DB
-})
 
 /**
  * Mapa para relacionar los C.I -> Uso de Medidor
