@@ -31,17 +31,17 @@ func jsonMiddleware(next http.Handler) http.Handler {
 **/
 func webappTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		params := mux.Vars(r)
-		userCI := UserCI(params["uci"])
+		//params := mux.Vars(r)
+		//userCI := UserCI(params["uci"])
 		// Hacemos una pequeña sanitizacion del token
-		token := r.Header.Get("Authorization")
-		token = strings.Replace(token, "Bearer ", "", 1)
-		token = strings.TrimSpace(token)
+		//token := r.Header.Get("Authorization")
+		//token = strings.Replace(token, "Bearer ", "", 1)
+		//token = strings.TrimSpace(token)
 		// Rechazamos pedido en caso de invalidez
-		if !tokenIsValid(userCI, token) {
-			rw.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		//if !tokenIsValid(userCI, token) {
+		//	rw.WriteHeader(http.StatusUnauthorized)
+		//	return
+		//}
 		next.ServeHTTP(rw, r) // Dejamos pasar al pedido
 	})
 }
