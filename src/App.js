@@ -4,7 +4,7 @@ import { isMobile } from './utils';
 
 import React from 'react';
 
-import { Layout, Divider, Button, Avatar, Space } from 'antd';
+import { Layout, Divider, Button, Avatar } from 'antd';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
 import Dashboard from './dashboard/Dashboard';
@@ -53,12 +53,12 @@ function AppHeader() {
       <div style={rowStyle}>
         {
           (!location.pathname.endsWith("/login")) ?
-            <Space direction="horizontal">
+            <div style={rowStyle}>
               <Avatar style={{ backgroundColor: '#f56a00' }}>JP</Avatar>
               <Button onClick={closeSession} id="btn" type="primary" href="/login">
                 Cerrar Sesion
               </Button>
-            </Space>
+            </div>
             : <></>
         }
       </div>
