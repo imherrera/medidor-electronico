@@ -31,7 +31,7 @@ const postLoginForm = async (form) => {
     /**
      * Llamada a nuestro servidor para logearnos
      * **/
-    const response = await fetch('http://192.168.0.12:8080/login', params);
+    const response = await fetch('https://medidor-electronico-server.herokuapp.com/login', params);
 
     /**
      * Checkeamos que el servidor acepto las credenciales como validas
