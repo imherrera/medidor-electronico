@@ -1,0 +1,79 @@
+.dashboard-layout {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.chart {
+    background: white;
+    border-style: 1px solid lightgrey;
+}
+
+.month-resume {
+    border-style: 1px solid lightgrey;
+    border-radius: 8px;
+    margin: 2em;
+    background: #5f6368;
+    padding: 2em;
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.recharts-surface {
+    margin: auto;
+    width: 100%;
+}
+
+/* Responsive layout - makes a one column layout instead of a two-column layout */
+
+@media (max-width: 800px) {
+    .flex-container {
+        flex-direction: column;
+    }
+    .month-resume {
+        margin: 0px;
+    }
+    .recharts-surface {
+        margin: 0px;
+        width: 100%;
+        background: lavender;
+    }
+    .chart-title {
+        padding-left: 0px;
+    }
+}
+
+.month-resume h3 {
+    color: white;
+}
+
+.month-resume h5 {
+    color: lightgray;
+}
+
+.month-resume h1 {
+    color: lightgoldenrodyellow;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.chart-title {
+    margin-top: 2em;
+    padding-left: 32px;
+}
